@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LIDL Durres – Lab Test Programme v2</title>
+<style>
+:root{
+  --bd:#1F4E79;--bm:#2E75B6;--bl:#BDD7EE;--bg:#ECEFF4;
+  --gd:#0C6B24;--gl:#D9F0D4;--ge:#E8F4E8;
+  --yl:#FFF2CC;--or:#F4B942;--rd:#C00000;--rd2:#FDECEA;
+  --g1:#F5F5F5;--g2:#E0E0E0;--g3:#9E9E9E;--wh:#fff;--tx:#222;
+  --lock:#FFE0B2;--recv:#E3F2FD;--assum:#F3E5F5;
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif}
+body{background:var(--bg);color:var(--tx);font-size:13px}
+
+/* ── PAGE TABS ─────────────────────── */
+#page-tabs{background:var(--bd);display:flex;padding:0 20px;gap:0}
+.page-tab{
+  padding:10px 22px;color:rgba(255,255,255,.7);cursor:pointer;
+  border-bottom:3px solid transparent;font-size:13px;font-weight:600;
+  transition:all .2s;
+}
+.page-tab.active{color:#fff;border-bottom-color:#4FC3F7}
+.page-tab:hover{color:#fff}
+
+/* ── TOP BAR ───────────────────────── */
+#topbar{
+  background:var(--bd);color:#fff;padding:8px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 2px 6px rgba(0,0,0,.3);
+}
+#topbar h1{font-size:14px;font-weight:700}
+#topbar small{font-size:10px;opacity:.7;display:block}
+.tbtn{
+  background:var(--bm);color:#fff;border:none;border-radius:4px;
+  padding:5px 12px;margin-left:5px;cursor:pointer;font-size:11px;
+}
+.tbtn:hover{filter:brightness(1.15)}
+.tbtn.green{background:var(--gd)}
+.tbtn.amber{background:#e67e00}
+
+/* ── PROJ BAR ──────────────────────── */
+#proj-bar{
+  background:var(--bl);padding:6px 20px;
+  display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+}
+#proj-bar label{font-size:11px;font-weight:600;color:var(--bd)}
+#proj-bar input,#proj-bar select{
+  border:1px solid #aac;border-radius:3px;padding:3px 6px;font-size:11px;background:#fff
+}
+
+/* ── GLOBAL DIST BAR ───────────────── */
+#dist-bar{
+  background:#fff;border-bottom:2px solid var(--bl);
+  padding:8px 20px;display:flex;gap:20px;flex-wrap:wrap;align-items:center
+}
+#dist-bar h3{font-size:11px;color:var(--bd);white-space:nowrap}
+.dist-item{display:flex;flex-direction:column;align-items:center;font-size:10px;min-width:44px}
+.dist-item .dlabel{color:#555;margin-bottom:2px}
+.dist-progress{
+  width:44px;height:8px;background:#eee;border-radius:4px;overflow:hidden;margin-bottom:2px
+}
+.dist-fill{height:100%;border-radius:4px;transition:width .3s}
+.dist-fill.ok{background:#4CAF50}
+.dist-fill.warn{background:var(--or)}
+.dist-fill.over{background:var(--bm)}
+.dist-fill.fail{background:var(--rd)}
+.dist-counts{font-size:9px;color:#444}
+.dist-counts .curr{font-weight:700}
+.dist-counts .curr.ok{color:#4CAF50}
+.dist-counts .curr.fail{color:var(--rd)}
+.dist-counts .curr.warn{color:var(--or)}
+
+/* ── BH TABS ────────────────────────── */
+#bh-tabs-wrap{
+  background:#fff;border-bottom:2px solid var(--bl);
+  display:flex;align-items:center;padding:0 20px;gap:3px;overflow-x:auto
+}
+.bh-tab{
+  padding:7px 14px 5px;border:1px solid var(--g2);border-bottom:none;
+  border-radius:5px 5px 0 0;cursor:pointer;font-size:11px;background:var(--g1);
+  display:flex;align-items:center;gap:5px;white-space:nowrap;transition:background .15s;
+}
+.bh-tab.active{background:var(--bd);color:#fff;font-weight:700}
+.bh-tab .badge{
+  font-size:9px;padding:1px 5px;border-radius:8px;
+}
+.bh-tab .badge.done{background:#E8F5E9;color:#2E7D32}
+.bh-tab.active .badge.done{background:#2E7D32;color:#fff}
+.bh-tab .badge.received{background:#E3F2FD;color:#0D47A1}
+.bh-tab.active .badge.received{background:#0D47A1;color:#fff}
+.bh-tab .badge.assumed{background:#F3E5F5;color:#4A148C}
+.bh-tab.active .badge.assumed{background:#4A148C;color:#fff}
+
+/* ── BH INFO STRIP ─────────────────── */
+#bh-info-strip{
+  background:#fff;padding:7px 20px;border-bottom:1px solid var(--g2);
+  display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+}
+#bh-info-strip label{font-size:11px;font-weight:600;color:var(--bd)}
+#bh-info-strip input{
+  border:1px solid #ccc;border-radius:3px;padding:3px 6px;font-size:11px;width:120px
+}
+.bh-status-badge{
+  padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;
+}
+.bh-status-badge.done{background:#E8F5E9;color:#2E7D32;border:1px solid #A5D6A7}
+.bh-status-badge.received{background:#E3F2FD;color:#0D47A1;border:1px solid #90CAF9}
+.bh-status-badge.assumed{background:#F3E5F5;color:#4A148C;border:1px solid #CE93D8}
+
+/* ── MAIN ───────────────────────────── */
+#main{padding:14px 20px}
+.page-content{display:none}
+.page-content.active{display:block}
+
+/* ── ADD ROW BAR ──────────────────── */
+.add-row-bar{
+  display:flex;gap:7px;align-items:center;padding:6px 0;flex-wrap:wrap;
+  border-bottom:1px dashed var(--g2);margin-bottom:8px
+}
+.add-row-bar input,.add-row-bar select{
+  border:1px solid #ccc;border-radius:3px;padding:3px 7px;font-size:11px
+}
+.btn-add-row{
+  background:var(--bm);color:#fff;border:none;border-radius:4px;
+  padding:4px 12px;cursor:pointer;font-size:11px
+}
+.btn-add-row:hover{background:var(--bd)}
+
+/* ── TABLE ──────────────────────────── */
+.tbl-wrap{overflow-x:auto;margin-bottom:10px}
+table.smp{border-collapse:collapse;width:100%;min-width:1500px;background:#fff;font-size:10.5px}
+table.smp th{
+  background:var(--bd);color:#fff;padding:4px 3px;text-align:center;
+  white-space:nowrap;font-size:9.5px;border:1px solid #3a6fa0;position:sticky;top:0
+}
+table.smp th.info-col{min-width:55px}
+table.smp th.test-col{min-width:40px;max-width:48px;font-size:9px;line-height:1.2}
+table.smp td{
+  border:1px solid var(--g2);padding:3px;text-align:center;vertical-align:middle
+}
+table.smp tr.locked-row td{background:#FFF8E1 !important;opacity:.88}
+table.smp tr:nth-child(even):not(.locked-row) td{background:#FAFCFF}
+table.smp tr:not(.locked-row):hover td{background:#EBF3FC}
+.test-cb{width:15px;height:15px;cursor:pointer;accent-color:var(--bm)}
+.test-cb:disabled{cursor:not-allowed;opacity:.6}
+td.proposed{background:var(--gl) !important}
+td.done-cell{background:#FFF3E0 !important}
+td.manual-cell{background:#E3F2FD !important}
+td.empty-cell{background:#fafafa}
+.src-dot{display:inline-block;width:5px;height:5px;border-radius:50%;margin-left:1px;vertical-align:middle}
+.src-dot.done{background:#E65100}
+.src-dot.proposed{background:var(--gd)}
+.src-dot.manual{background:var(--bm)}
+.strat-badge{display:inline-block;padding:1px 5px;border-radius:8px;font-size:9.5px;font-weight:700}
+.strat-I{background:#FDECEA;color:#B71C1C}
+.strat-II{background:#FFF3E0;color:#E65100}
+.strat-III{background:#E8F5E9;color:#1B5E20}
+.strat-IV{background:#E3F2FD;color:#0D47A1}
+.strat-V{background:#FCE4EC;color:#880E4F}
+.strat-VI{background:#EDE7F6;color:#311B92}
+.row-action-btn{
+  padding:2px 6px;border:none;border-radius:3px;cursor:pointer;font-size:9.5px
+}
+.btn-del-row{background:#FDECEA;color:#C00}
+.btn-del-row:hover{background:#ffcdd2}
+
+/* ── COMPLIANCE ─────────────────────── */
+#compliance-panel{
+  background:#fff;border-radius:6px;padding:12px 16px;
+  box-shadow:0 1px 4px rgba(0,0,0,.1);margin-bottom:14px
+}
+#compliance-panel h3{font-size:11.5px;color:var(--bd);margin-bottom:7px}
+.comp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:7px}
+.comp-card{border:1px solid var(--g2);border-radius:4px;padding:7px 9px;font-size:10px}
+.comp-card.ok{border-left:4px solid #4CAF50;background:#F1F8E9}
+.comp-card.warn{border-left:4px solid var(--or);background:#FFF8E1}
+.comp-card.fail{border-left:4px solid var(--rd);background:#FDECEA}
+.comp-card h4{font-size:10.5px;margin-bottom:3px}
+.comp-bar{display:flex;gap:3px;align-items:center;margin-top:1px}
+.comp-bar span.label{width:68px;color:#555}
+.comp-bar span.count{font-weight:700;min-width:18px}
+.comp-bar span.req{color:#888;font-size:9px}
+.comp-bar span.ok{color:#4CAF50}
+.comp-bar span.warn{color:var(--or)}
+.comp-bar span.fail{color:var(--rd)}
+
+/* ── GLOBAL COMPLIANCE ───────────────── */
+#global-comp{
+  background:#fff;border-radius:6px;padding:12px 16px;
+  box-shadow:0 1px 4px rgba(0,0,0,.1);margin-bottom:14px
+}
+#global-comp h3{font-size:11.5px;color:var(--bd);margin-bottom:7px}
+.glob-tbl{width:100%;border-collapse:collapse;font-size:10.5px}
+.glob-tbl th{background:var(--bd);color:#fff;padding:5px 8px;text-align:left;font-size:10px}
+.glob-tbl td{border:1px solid var(--g2);padding:4px 7px}
+.glob-tbl tr:nth-child(even) td{background:#FAFCFF}
+.pbar-wrap{width:120px;height:10px;background:#eee;border-radius:4px;overflow:hidden;display:inline-block;vertical-align:middle;margin-right:5px}
+.pbar{height:100%;border-radius:4px;transition:width .3s}
+
+/* ── NOTE BOX ───────────────────────── */
+.note-box{
+  background:#FFF8E1;border-left:4px solid #F4B942;padding:8px 12px;
+  border-radius:0 4px 4px 0;margin-bottom:10px;font-size:11px;color:#555
+}
+.note-box strong{color:#E67E00}
+
+/* ── LEGEND ─────────────────────────── */
+#legend{
+  background:#fff;border-radius:6px;padding:8px 16px;
+  display:flex;gap:16px;flex-wrap:wrap;font-size:10.5px;
+  box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:10px
+}
+.legend-item{display:flex;align-items:center;gap:5px}
+.legend-box{width:16px;height:12px;border-radius:2px;border:1px solid #ccc}
+
+/* ── MODAL ───────────────────────────── */
+.modal-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);
+  z-index:300;justify-content:center;align-items:center
+}
+.modal-overlay.show{display:flex}
+.modal-box{
+  background:#fff;border-radius:8px;padding:22px 26px;
+  max-width:580px;width:92%;box-shadow:0 4px 24px rgba(0,0,0,.25);
+  max-height:90vh;overflow-y:auto
+}
+.modal-box h2{color:var(--bd);margin-bottom:10px;font-size:15px}
+.modal-close{float:right;background:none;border:none;font-size:20px;cursor:pointer;color:#888}
+.modal-box ol{padding-left:18px;line-height:1.9;font-size:12px}
+.modal-box code{background:var(--g1);padding:1px 5px;border-radius:3px;font-size:11px}
+
+/* ── MODELS PAGE ─────────────────────── */
+#models-page h2{color:var(--bd);font-size:16px;margin-bottom:4px}
+#models-page .subtitle{color:#666;font-size:11px;margin-bottom:16px}
+.model-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:16px;margin-bottom:20px}
+.model-card{
+  background:#fff;border-radius:8px;padding:16px 18px;
+  box-shadow:0 2px 8px rgba(0,0,0,.1);border-top:4px solid var(--bd)
+}
+.model-card.mc{border-top-color:#1976D2}
+.model-card.hs{border-top-color:#2E7D32}
+.model-card.ssc{border-top-color:#E65100}
+.model-card h3{font-size:14px;font-weight:700;margin-bottom:3px}
+.model-card .model-tag{font-size:10px;color:#888;margin-bottom:8px;display:block}
+.model-card .desc{font-size:11px;color:#444;margin-bottom:10px;line-height:1.5}
+.model-card h4{font-size:11.5px;color:var(--bd);margin:8px 0 4px;border-bottom:1px solid var(--g2);padding-bottom:2px}
+.param-tbl{width:100%;border-collapse:collapse;font-size:10px;margin-bottom:6px}
+.param-tbl th{background:#EFF3F9;padding:4px 6px;text-align:left;font-size:9.5px;color:var(--bd);border:1px solid var(--g2)}
+.param-tbl td{border:1px solid var(--g2);padding:3px 6px;vertical-align:top}
+.param-tbl tr:nth-child(even) td{background:#FAFCFF}
+.param-sym{font-family:serif;font-weight:700;font-size:12px}
+.param-unit{color:#888;font-size:9px}
+.formula-box{
+  background:#F8F9FC;border:1px solid var(--g2);border-radius:4px;
+  padding:7px 10px;font-size:10.5px;margin:5px 0;font-family:monospace;color:#333
+}
+.param-ok{color:#2E7D32;font-size:10px;font-weight:700}
+.param-warn{color:#E65100;font-size:10px;font-weight:700}
+.param-miss{color:#C00000;font-size:10px;font-weight:700}
+.model-note{
+  background:#FFF8E1;border-left:3px solid #F4B942;padding:6px 9px;
+  border-radius:0 4px 4px 0;font-size:10.5px;color:#555;margin:5px 0
+}
+.use-badge{
+  display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;margin-left:6px
+}
+.use-best{background:#E8F5E9;color:#2E7D32;border:1px solid #A5D6A7}
+.use-ok{background:#E3F2FD;color:#0D47A1;border:1px solid #90CAF9}
+.use-simple{background:#F3E5F5;color:#4A148C;border:1px solid #CE93D8}
+.stratum-reco{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0}
+.sr-item{
+  display:flex;flex-direction:column;align-items:center;
+  background:#F5F5F5;border-radius:5px;padding:4px 8px;font-size:9.5px;
+  border:1px solid var(--g2);
+}
+.sr-item .srl{font-weight:700;font-size:11px;margin-bottom:1px}
+
+@media print{
+  #topbar .tbtn,#page-tabs,.add-row-bar,.row-action-btn,
+  #bh-tabs-wrap,#legend{display:none!important}
+  body{background:#fff}
+  table.smp{min-width:auto!important;font-size:8px}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ PAGE TABS ═══════════════════════════════════════════════════════ -->
+<div id="page-tabs">
+  <div class="page-tab active" onclick="switchPage('programme',this)">🧪 Lab Test Programme</div>
+  <div class="page-tab" onclick="switchPage('models',this)">🔬 Constitutive Models</div>
+</div>
+
+<!-- ═══ TOP BAR ══════════════════════════════════════════════════════════ -->
+<div id="topbar">
+  <div>
+    <h1>Lab Test Programme – LIDL LGZ Durres (7 Boreholes)</h1>
+    <small>EN 1997-2:2007 · Boti (2025) · Prof. Shkodrani distribution principle</small>
+  </div>
+  <div>
+    <button class="tbtn" onclick="autoDistributeAll()">⚡ Auto-Distribute All BHs</button>
+    <button class="tbtn amber" onclick="clearNonLocked()">🔄 Clear Proposed</button>
+    <button class="tbtn" onclick="saveJSON()">💾 Save JSON</button>
+    <label><input type="file" accept=".json" onchange="loadJSON(event)" style="display:none">
+      <button class="tbtn" onclick="this.parentElement.querySelector('input').click()">📂 Load JSON</button></label>
+    <button class="tbtn green" onclick="exportExcel()">📊 Export Excel</button>
+    <button class="tbtn" onclick="document.getElementById('github-modal').classList.add('show')">🐙 GitHub</button>
+    <button class="tbtn" onclick="window.print()">🖨️ Print</button>
+  </div>
+</div>
+
+<!-- ═══ PROJECT INFO ══════════════════════════════════════════════════════ -->
+<div id="proj-bar">
+  <label>Project: <input id="p-project" value="LIDL LGZ – Logistics Centre, Durres"></label>
+  <label>Client: <input id="p-client" value="LIDL Albania"></label>
+  <label>Location: <input id="p-location" value="Porto Romano, Durrës, Albania" style="width:200px"></label>
+  <label>Engineer: <input id="p-engineer" value="Ioan Boti, PhD Eng" style="width:160px"></label>
+  <label>Date: <input type="date" id="p-date"></label>
+  <label>No. BHs: <strong style="color:var(--bd);font-size:13px">7</strong></label>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     PAGE 1 – PROGRAMME
+════════════════════════════════════════════════════════════════════════ -->
+<div id="programme-page" class="page-content active">
+
+  <!-- Global distribution progress bar -->
+  <div id="dist-bar">
+    <h3>📊 Global totals (all 7 BHs) vs. EC7 per-stratum minimums:</h3>
+    <div id="dist-items"></div>
+  </div>
+
+  <!-- BH Tabs -->
+  <div id="bh-tabs-wrap">
+    <div id="bh-tabs"></div>
+  </div>
+
+  <!-- BH Info strip -->
+  <div id="bh-info-strip">
+    <label>BH ID: <input id="bh-id" oninput="updateBHField('id')"></label>
+    <label>Depth (m): <input type="number" id="bh-depth" step="1" oninput="updateBHField('depth')"></label>
+    <label>Date: <input type="date" id="bh-date" oninput="updateBHField('date')"></label>
+    <label>Acceptance: <input id="bh-acc" oninput="updateBHField('acceptance')"></label>
+    <label>Shelby tubes: <input type="number" id="bh-shelby" oninput="updateBHField('shelby')"></label>
+    <label>Lab: <input id="bh-lab" oninput="updateBHField('lab')" style="width:130px"></label>
+    <span id="bh-status-badge" class="bh-status-badge"></span>
+    <button class="tbtn" style="margin-left:8px" onclick="autoDistribute()">⚡ Distribute this BH</button>
+    <button class="tbtn amber" style="margin-left:4px" onclick="clearThisBH()">🔄 Clear</button>
+  </div>
+
+  <div id="main">
+
+    <!-- Status note for current BH -->
+    <div id="bh-note" class="note-box" style="display:none"></div>
+
+    <!-- Add sample row (hidden for locked BH) -->
+    <div class="add-row-bar" id="add-row-bar">
+      <strong style="color:var(--bd);font-size:11px">Add sample:</strong>
+      <input type="text" id="in-sample" placeholder="C17" style="width:70px">
+      <input type="text" id="in-depth" placeholder="e.g. 46.00-46.50" style="width:130px">
+      <select id="in-soil">
+        <option>Clay (CH)</option><option>Clay (CL)</option>
+        <option>Silty Clay (CL-ML)</option><option>Silt (ML)</option>
+        <option>Organic Clay (OH)</option><option>Silty Sand (SM)</option>
+        <option>Sand (SP-SM)</option><option>Sand (SP)</option>
+        <option>Gravel (GW-GP)</option><option>Fill / Mixed</option>
+        <option>Sample not recovered</option>
+      </select>
+      <button class="btn-add-row" onclick="addSampleRow()">＋ Add</button>
+      <span style="font-size:10.5px;color:#666;margin-left:6px">
+        💡 Use <em>⚡ Distribute</em> to auto-assign tests (Shkodrani principle).
+      </span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table class="smp" id="smp-table">
+        <thead id="tbl-head"></thead>
+        <tbody id="tbl-body"></tbody>
+      </table>
+    </div>
+
+    <!-- Per-BH Shkodrani distribution guide -->
+    <div id="compliance-panel">
+      <h3>📐 Shkodrani Distribution Guide — This Borehole
+        <span style="font-size:10px;font-weight:400;color:#555;margin-left:8px">
+          (targets for even spatial distribution across 7 BHs; not EC7 minimums)
+        </span>
+      </h3>
+      <div class="comp-grid" id="comp-grid"></div>
+    </div>
+
+    <!-- Global EC7 compliance per stratum -->
+    <div id="global-comp">
+      <h3>🌐 EC7-2 Compliance — Tests per Stratum (All 7 Boreholes Combined)
+        <span style="font-size:10px;font-weight:400;color:#555;margin-left:8px">
+          EN 1997-2:2007 Annex M/P/Q · minimum 3 tests per stratum (medium comparable experience)
+        </span>
+      </h3>
+      <table class="glob-tbl" id="glob-tbl"></table>
+    </div>
+
+    <!-- Legend -->
+    <div id="legend">
+      <strong style="color:var(--bd)">Legend:</strong>
+      <div class="legend-item"><div class="legend-box" style="background:#FFF3E0"></div> Completed (BH203)</div>
+      <div class="legend-item"><div class="legend-box" style="background:var(--gl)"></div> Proposed / auto-distributed</div>
+      <div class="legend-item"><div class="legend-box" style="background:#E3F2FD"></div> Manually added</div>
+      <div class="legend-item"><div class="legend-box" style="background:#fafafa;border:1px dashed #ccc"></div> Not assigned</div>
+      <div class="legend-item">
+        <span class="strat-badge strat-I">I 0–6m</span>
+        <span class="strat-badge strat-II">II 6–10m</span>
+        <span class="strat-badge strat-III">III 10–30m</span>
+        <span class="strat-badge strat-IV">IV 30–39m</span>
+        <span class="strat-badge strat-V">V 39–42m</span>
+        <span class="strat-badge strat-VI">VI 42–50m</span>
+      </div>
+    </div>
+
+  </div><!-- end #main -->
+</div><!-- end programme-page -->
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     PAGE 2 – CONSTITUTIVE MODELS
+════════════════════════════════════════════════════════════════════════ -->
+<div id="models-page" class="page-content" style="padding:16px 20px">
+  <h2>Constitutive Models – Parameter Requirements</h2>
+  <p class="subtitle">LIDL LGZ Durres · Porto Romano, Albania · Boti (2025) stratigraphy · For Midas GTS NX &amp; Plaxis 2D/3D</p>
+
+  <div class="model-cards">
+
+    <!-- ── MOHR-COULOMB ─────────────────────────────────────────────────── -->
+    <div class="model-card mc">
+      <h3>Mohr-Coulomb (MC) <span class="use-badge use-simple">Simple</span></h3>
+      <span class="model-tag">Elastic-perfectly plastic · Available in Midas GTS NX &amp; Plaxis</span>
+      <p class="desc">
+        Six-parameter model: linear elastic until the Mohr-Coulomb yield surface is reached, then
+        perfectly plastic. Does not capture stress-dependent stiffness or hardening. Recommended as
+        a <strong>benchmark</strong> and for firm/stiff layers (Strata IV, VI).
+        For soft clays, results in poor settlement prediction (overestimates heave on unloading).
+      </p>
+
+      <h4>Parameters &amp; Source Tests</h4>
+      <table class="param-tbl">
+        <tr><th>Symbol</th><th>Name</th><th>Unit</th><th>Source test</th><th>Status</th><th>Typical (site)</th></tr>
+        <tr><td class="param-sym">γ</td><td>Unit weight</td><td>kN/m³</td><td>Unit weight test</td><td class="param-ok">✅ Available</td><td>18–20</td></tr>
+        <tr><td class="param-sym">E</td><td>Young's modulus</td><td>MPa</td><td>E₅₀ from TxCD curve<br><em>OR</em> E ≈ Eoed·f(ν)</td><td class="param-warn">⚠ Need TxCD curves</td><td>2–20 (clay)</td></tr>
+        <tr><td class="param-sym">ν</td><td>Poisson's ratio</td><td>–</td><td>Assumed</td><td class="param-warn">⚠ Assumed</td><td>0.25–0.35</td></tr>
+        <tr><td class="param-sym">c'</td><td>Effective cohesion</td><td>kPa</td><td>DST-CD, TxCD (peak)</td><td class="param-ok">✅ Available</td><td>5–25</td></tr>
+        <tr><td class="param-sym">φ'</td><td>Friction angle</td><td>°</td><td>DST-CD, TxCD</td><td class="param-ok">✅ Available</td><td>18–28</td></tr>
+        <tr><td class="param-sym">ψ</td><td>Dilatancy angle</td><td>°</td><td>Assumed (ψ≈φ'−30° sand;<br>ψ=0 clay)</td><td class="param-warn">⚠ Assumed</td><td>0 (clays)</td></tr>
+        <tr><td class="param-sym">cᵤ</td><td>Undrained shear strength</td><td>kPa</td><td>TxUU</td><td class="param-ok">✅ Available</td><td>20–80</td></tr>
+      </table>
+
+      <div class="formula-box">
+        E from oedometer: E = Eoed × (1 + ν)(1 − 2ν) / (1 − ν)<br>
+        Eoed = 1 / mv  (from oedometer compression curve)<br>
+        ⚠ Better: request full TxCD stress-strain curve → read E₅₀ directly
+      </div>
+
+      <h4>Recommended for strata</h4>
+      <div class="stratum-reco">
+        <div class="sr-item"><span class="srl strat-badge strat-I">I</span>Backup only</div>
+        <div class="sr-item"><span class="srl strat-badge strat-II">II</span>OK</div>
+        <div class="sr-item"><span class="srl strat-badge strat-IV">IV</span>Good</div>
+        <div class="sr-item"><span class="srl strat-badge strat-V">V</span>OK</div>
+        <div class="sr-item"><span class="srl strat-badge strat-VI">VI</span>Good</div>
+      </div>
+
+      <div class="model-note">⚠ Do NOT use MC for primary settlement analysis of Strata I and III (soft clays). Use SSC instead.</div>
+    </div>
+
+    <!-- ── HARDENING SOIL ────────────────────────────────────────────────── -->
+    <div class="model-card hs">
+      <h3>Hardening Soil (HS) <span class="use-badge use-ok">Advanced</span></h3>
+      <span class="model-tag">Isotropic hardening (deviatoric + volumetric) · Plaxis / Midas GTS NX</span>
+      <p class="desc">
+        Hyperbolic stress-strain in drained triaxial compression, combined with a Cam-Clay
+        compression cap. Captures stress-dependent stiffness and densification of sands.
+        Recommended for Strata II (loose sand) and V (dense sand). Better than MC for all
+        materials, but requires full TxCD stress-strain curves.
+      </p>
+
+      <h4>Parameters &amp; Source Tests</h4>
+      <table class="param-tbl">
+        <tr><th>Symbol</th><th>Name</th><th>Unit</th><th>Source test</th><th>Status</th><th>Typical (site)</th></tr>
+        <tr><td class="param-sym">E₅₀<sup>ref</sup></td><td>Secant stiffness at p<sub>ref</sub></td><td>MPa</td><td>TxCD stress-strain → E at q=0.5·qf</td><td class="param-miss">❌ Need raw TxCD curves</td><td>5–30</td></tr>
+        <tr><td class="param-sym">E<sub>oed</sub><sup>ref</sup></td><td>Oedometer stiffness at p<sub>ref</sub></td><td>MPa</td><td>Oedometer (at σ'v = 100 kPa)</td><td class="param-ok">✅ Available</td><td>2–15</td></tr>
+        <tr><td class="param-sym">E<sub>ur</sub><sup>ref</sup></td><td>Unloading-reloading stiffness</td><td>MPa</td><td>TxCD U/R cycle <em>OR</em> E<sub>ur</sub> ≈ 3·E₅₀</td><td class="param-warn">⚠ Estimate or U/R cycle</td><td>15–90</td></tr>
+        <tr><td class="param-sym">m</td><td>Stress dependency power</td><td>–</td><td>Multiple oedometer steps</td><td class="param-warn">⚠ Fitting required</td><td>0.5–1.0</td></tr>
+        <tr><td class="param-sym">c'</td><td>Effective cohesion</td><td>kPa</td><td>DST-CD, TxCD</td><td class="param-ok">✅ Available</td><td>5–25</td></tr>
+        <tr><td class="param-sym">φ'</td><td>Friction angle</td><td>°</td><td>DST-CD, TxCD</td><td class="param-ok">✅ Available</td><td>18–28</td></tr>
+        <tr><td class="param-sym">ψ</td><td>Dilatancy angle</td><td>°</td><td>Assumed</td><td class="param-warn">⚠ Assumed</td><td>0 (clays); φ'−30° (sands)</td></tr>
+        <tr><td class="param-sym">R<sub>f</sub></td><td>Failure ratio</td><td>–</td><td>TxCD curve (q<sub>f</sub>/q<sub>a</sub>)</td><td class="param-warn">⚠ Default 0.9 acceptable</td><td>0.85–0.95</td></tr>
+        <tr><td class="param-sym">K₀<sup>nc</sup></td><td>K₀ for NC state</td><td>–</td><td>1 − sinφ' (Jáky)</td><td class="param-ok">✅ Calculated</td><td>0.5–0.65</td></tr>
+      </table>
+
+      <div class="formula-box">
+        E₅₀(σ'₃) = E₅₀<sup>ref</sup> · (c'cosφ' + σ'₃sinφ')ᵐ / (c'cosφ' + p<sub>ref</sub>sinφ')ᵐ<br>
+        p<sub>ref</sub> = 100 kPa (reference pressure)<br>
+        E<sub>ur</sub><sup>ref</sup> ≈ 3 · E₅₀<sup>ref</sup>  (Plaxis default if no U/R cycle)
+      </div>
+
+      <h4>ACTION REQUIRED</h4>
+      <div class="model-note">
+        ❌ <strong>Request full TxCD stress-strain curves from GEOTEST.</strong>
+        Specify: "Report deviator stress (q) vs. axial strain (ε₁) with minimum 15 data points per specimen."
+        Without raw curves, E₅₀<sup>ref</sup> cannot be determined.
+      </div>
+
+      <h4>Recommended for strata</h4>
+      <div class="stratum-reco">
+        <div class="sr-item"><span class="srl strat-badge strat-II">II</span>Best</div>
+        <div class="sr-item"><span class="srl strat-badge strat-IV">IV</span>Good</div>
+        <div class="sr-item"><span class="srl strat-badge strat-V">V</span>Best</div>
+        <div class="sr-item"><span class="srl strat-badge strat-VI">VI</span>Good</div>
+      </div>
+    </div>
+
+    <!-- ── SOFT SOIL CREEP ───────────────────────────────────────────────── -->
+    <div class="model-card ssc">
+      <h3>Soft Soil Creep (SSC) <span class="use-badge use-best">Best for soft clays</span></h3>
+      <span class="model-tag">Modified Cam Clay + viscoplastic creep · Plaxis / Midas GTS NX (Soft Ground)</span>
+      <p class="desc">
+        Extends the Soft Soil model with a third compressibility line (μ*) to capture
+        <strong>secondary consolidation (creep)</strong>. STRONGLY RECOMMENDED for Strata I and III
+        (soft clays under warehouse slab). Without creep, long-term settlements are underestimated.
+        All parameters derivable from the current oedometer programme <em>with additions</em>.
+      </p>
+
+      <h4>Parameters &amp; Source Tests</h4>
+      <table class="param-tbl">
+        <tr><th>Symbol</th><th>Name</th><th>Unit</th><th>Source test &amp; formula</th><th>Status</th><th>Typical (site)</th></tr>
+        <tr><td class="param-sym">λ*</td><td>Modified compression index</td><td>–</td><td>Oedometer Cc → λ* = Cc / (2.303·(1+e₀))</td><td class="param-ok">✅ Available</td><td>0.05–0.18</td></tr>
+        <tr><td class="param-sym">κ*</td><td>Modified swelling index</td><td>–</td><td>Oedometer Cs (U/R cycle) → κ* = Cs / (2.303·(1+e₀))</td><td class="param-warn">⚠ Need U/R cycle specified</td><td>0.008–0.025</td></tr>
+        <tr><td class="param-sym">μ*</td><td>Modified creep index</td><td>–</td><td>Long-duration oedometer Cα → μ* = Cα / (2.303·(1+e₀))</td><td class="param-miss">❌ NOT in current plan</td><td>0.002–0.008</td></tr>
+        <tr><td class="param-sym">c'</td><td>Effective cohesion</td><td>kPa</td><td>DST-CD, TxCD</td><td class="param-ok">✅ Available</td><td>5–25</td></tr>
+        <tr><td class="param-sym">φ'</td><td>Friction angle</td><td>°</td><td>DST-CD, TxCD</td><td class="param-ok">✅ Available</td><td>18–28</td></tr>
+        <tr><td class="param-sym">ν<sub>ur</sub></td><td>Poisson (unload/reload)</td><td>–</td><td>Assumed</td><td class="param-warn">⚠ Assumed 0.15–0.20</td><td>0.15–0.20</td></tr>
+        <tr><td class="param-sym">K₀<sup>nc</sup></td><td>K₀ for NC state</td><td>–</td><td>1 − sinφ' (Jáky)</td><td class="param-ok">✅ Calculated</td><td>0.5–0.65</td></tr>
+        <tr><td class="param-sym">M</td><td>CSL slope (p'–q space)</td><td>–</td><td>M = 6·sinφ' / (3−sinφ')</td><td class="param-ok">✅ Calculated</td><td>0.8–1.1</td></tr>
+        <tr><td class="param-sym">OCR</td><td>Overconsolidation ratio</td><td>–</td><td>Oedometer σ'p → OCR = σ'p / σ'v0</td><td class="param-warn">⚠ Need σ'p reported explicitly</td><td>1.0–2.5</td></tr>
+        <tr><td class="param-sym">e₀</td><td>Initial void ratio</td><td>–</td><td>e₀ = Gs·γw/γd − 1</td><td class="param-ok">✅ Calculated from Gs, γ, w</td><td>0.8–1.4</td></tr>
+        <tr><td class="param-sym">c<sub>v</sub></td><td>Consolidation coefficient</td><td>m²/yr</td><td>Oedometer (time curve, Taylor)</td><td class="param-warn">⚠ Request explicitly from lab</td><td>0.5–5</td></tr>
+        <tr><td class="param-sym">k</td><td>Hydraulic conductivity</td><td>m/s</td><td>k = cv · mv · γw (back-calculated)</td><td class="param-warn">⚠ Derived from oedometer</td><td>10⁻¹⁰–10⁻⁸</td></tr>
+      </table>
+
+      <div class="formula-box">
+        λ* = Cc / [2.303 · (1 + e₀)]<br>
+        κ* = Cs / [2.303 · (1 + e₀)]<br>
+        μ* = Cα / [2.303 · (1 + e₀)]     ← ADD to oedometer programme!<br>
+        Cα/Cc ≈ 0.04–0.06 for soft Albanian coastal clays (Mesri &amp; Godlewski, 1977)
+      </div>
+
+      <h4>CRITICAL ACTIONS</h4>
+      <div class="model-note">
+        ❌ <strong>Add Cα measurement to oedometer requests</strong>:
+        "Each load increment to be held ≥ 24 hours; report secondary compression Cα = Δe/Δ(log t)."
+      </div>
+      <div class="model-note">
+        ⚠ <strong>Oedometer U/R cycle</strong>: specify ≥1 unload-reload cycle per sample; report Cs separately.
+      </div>
+      <div class="model-note">
+        ⚠ <strong>σ'p (preconsolidation pressure)</strong>: request Casagrande construction from lab; report per sample.
+      </div>
+      <div class="model-note">
+        ⚠ <strong>cv and mv per load step</strong>: needed for consolidation time analysis (embankment, drainage).
+      </div>
+
+      <h4>Recommended for strata</h4>
+      <div class="stratum-reco">
+        <div class="sr-item"><span class="srl strat-badge strat-I">I</span>⭐ Best</div>
+        <div class="sr-item"><span class="srl strat-badge strat-III">III</span>⭐ Best</div>
+        <div class="sr-item"><span class="srl strat-badge strat-IV">IV</span>Consider</div>
+        <div class="sr-item"><span class="srl strat-badge strat-VI">VI</span>Consider</div>
+      </div>
+    </div>
+
+  </div><!-- end model-cards -->
+
+  <!-- Summary recommendation table -->
+  <div style="background:#fff;border-radius:8px;padding:16px 18px;box-shadow:0 2px 8px rgba(0,0,0,.1);margin-bottom:16px">
+    <h3 style="color:var(--bd);font-size:14px;margin-bottom:10px">Model Selection per Stratum</h3>
+    <table class="glob-tbl">
+      <tr>
+        <th>Stratum</th><th>Depth</th><th>Soil</th>
+        <th>Midas GTS NX</th><th>Plaxis 2D/3D</th>
+        <th>Priority</th><th>Critical parameters needed</th>
+      </tr>
+      <tr><td><span class="strat-badge strat-I">I</span></td><td>0–6 m</td><td>Soft Clay CH/CL</td>
+          <td>Soft Ground or MCC</td><td><strong>Soft Soil Creep</strong></td>
+          <td style="background:#FDECEA;color:#C00;font-weight:700">HIGH</td>
+          <td>λ*, κ*, <strong>μ* (Cα)</strong>, σ'p, e₀</td></tr>
+      <tr><td><span class="strat-badge strat-II">II</span></td><td>6–10 m</td><td>Loose Sand SP-SM</td>
+          <td>Mohr-Coulomb or HS</td><td>Hardening Soil</td>
+          <td style="background:#FFEB9C">MEDIUM</td>
+          <td>E₅₀ from CPT qc, φ'</td></tr>
+      <tr><td><span class="strat-badge strat-III">III</span></td><td>10–30 m</td><td>Soft Clay CL</td>
+          <td>Soft Ground or MCC</td><td><strong>Soft Soil Creep</strong></td>
+          <td style="background:#FDECEA;color:#C00;font-weight:700">HIGH ⭐</td>
+          <td>λ*, κ*, <strong>μ* (Cα)</strong>, σ'p, TxCD curves, cv</td></tr>
+      <tr><td><span class="strat-badge strat-IV">IV</span></td><td>30–39 m</td><td>Firm Clay CL-ML</td>
+          <td>Mohr-Coulomb or HS</td><td>HS or MC</td>
+          <td style="background:#FFEB9C">MEDIUM</td>
+          <td>E₅₀ from TxCD curves, c', φ'</td></tr>
+      <tr><td><span class="strat-badge strat-V">V</span></td><td>39–42 m</td><td>Dense Sand SM</td>
+          <td>Mohr-Coulomb or HS</td><td>Hardening Soil</td>
+          <td style="background:#E8F5E9">LOW</td>
+          <td>E₅₀ from CPT qc, φ'</td></tr>
+      <tr><td><span class="strat-badge strat-VI">VI</span></td><td>42–50 m</td><td>Firm Silty Clay</td>
+          <td>Mohr-Coulomb</td><td>MC or HS</td>
+          <td style="background:#E8F5E9">LOW</td>
+          <td>c', φ', E (estimated)</td></tr>
+    </table>
+  </div>
+
+  <!-- References -->
+  <div style="background:#fff;border-radius:8px;padding:12px 18px;box-shadow:0 1px 4px rgba(0,0,0,.08)">
+    <h4 style="color:var(--bd);font-size:12px;margin-bottom:6px">Key References</h4>
+    <p style="font-size:10.5px;color:#555;line-height:1.8">
+      EN 1997-2:2007 – Eurocode 7: Ground investigation and testing ·
+      Brinkgreve et al. (2023) – Plaxis Material Models Manual ·
+      Midas GTS NX Analysis Reference (2023) ·
+      Boti, I. (2025) – Geotechnical Investigation Report, LIDL LGZ Durres ·
+      Mesri &amp; Godlewski (1977) – Time-compressibility interrelationship, JGED ASCE ·
+      Jáky (1944) – Coefficient of earth pressure at rest ·
+      Prof. N. Shkodrani (2026) – Distribution principle for laboratory test programmes
+    </p>
+  </div>
+</div><!-- end models-page -->
+
+<!-- ═══ GITHUB MODAL ══════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="github-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="document.getElementById('github-modal').classList.remove('show')">✕</button>
+    <h2>🐙 Deploy to GitHub Pages</h2>
+    <ol>
+      <li>Go to <strong>github.com</strong>, sign in, click <strong>New repository</strong>.</li>
+      <li>Name it <code>lidl-durres-lab</code>. Set it <strong>Public</strong>. Click <em>Create</em>.</li>
+      <li>Click <strong>uploading an existing file</strong> on the empty repo page.</li>
+      <li>Upload <code>LIDL_Durres_Lab_Programme_v2.html</code> and <strong>rename it <code>index.html</code></strong> in the interface.</li>
+      <li>Go to <strong>Settings → Pages</strong>. Source: branch <code>main</code>, folder <code>/ (root)</code>. Save.</li>
+      <li>App live at: <code>https://YOUR-USERNAME.github.io/lidl-durres-lab/</code></li>
+    </ol>
+    <p style="font-size:11px;color:#666;margin-top:8px">
+      100% static – no server needed. Use 💾 Save JSON to persist your data across sessions.
+    </p>
+    <button style="background:var(--bm);color:#fff;border:none;border-radius:4px;padding:6px 16px;cursor:pointer;margin-top:10px"
+      onclick="document.getElementById('github-modal').classList.remove('show')">Close</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+// ═══════════════════════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════════════════════
+const TESTS=[
+  {key:'γ',    label:'γ\nUnit\nWeight',    short:'γ'},
+  {key:'w',    label:'w\nWater\nContent',  short:'w%'},
+  {key:'Gs',   label:'Gs\nSpec.\nGravity', short:'Gs'},
+  {key:'Att',  label:'Atterberg\nLL/PL',   short:'Att'},
+  {key:'GSD',  label:'GSD\nGrain\nSize',   short:'GSD'},
+  {key:'Hyd',  label:'Hyd\nHydro-\nmetry', short:'Hyd'},
+  {key:'DST',  label:'DST\nDirect\nShear', short:'DST'},
+  {key:'Oed',  label:'Oed\nOedo-\nmeter',  short:'Oed'},
+  {key:'TxUU', label:'Tx\nUU',             short:'TxUU'},
+  {key:'TxCD', label:'Tx\nCD',             short:'TxCD'},
+  {key:'TxCU', label:'Tx\nCU',             short:'TxCU'},
+  {key:'OM',   label:'Organic\nMatter',    short:'OM'},
+  {key:'CaCO3',label:'CaCO₃',             short:'CaCO₃'},
+  {key:'ChS',  label:'Chem.\nSoil',        short:'ChS'},
+  {key:'ChW',  label:'Chem.\nWater',       short:'ChW'},
+  {key:'AASH', label:'AASHTO\nClass.',     short:'AASH'},
+];
+
+// ─── EC7 minimum tests PER STRATUM (EN 1997-2:2007, informative annexes) ─────
+// Basis: medium comparable experience (CPTs available), moderate variability
+//   Table M.3 → density (γ): 3/stratum
+//   Table M.1 → classification (GSD, Atterberg): 3/stratum
+//   Table P.1 → triaxial (TxUU, TxCD): 3/stratum  [1 test = 3 specimens @ different σ]
+//   Table P.2 → direct shear (DST):    3/stratum  [1 test = 3 specimens @ different σn]
+//   Table Q.1 → oedometer:             3/stratum
+// Minimums apply to: cohesive strata I,III,IV,VI; granular II,V (γ,GSD only)
+const EC7_MIN_PER_STRATUM=3;  // all major tests, medium experience
+const EC7_STRATA_ALL  =['I','II','III','IV','V','VI'];   // 6 strata total
+const EC7_STRATA_COH  =['I','III','IV','VI'];              // 4 cohesive strata
+const EC7_STRATA_OED  =['I','III','IV','VI'];              // settlement-relevant
+const EC7_STRATA_TxCD =['III','IV','VI'];                  // 3 strata for TxCD (min 2/str)
+
+// Global EC7 targets = sum of per-stratum minimums over applicable strata
+// These are used in the top distribution bar for quick overview
+const EC7_GLOBAL={
+  0:  {t:18, label:'γ',            note:'3/stratum × 6 strata (Table M.3)'},
+  1:  {t:0,  label:'w',            note:'All samples QC1–3'},
+  2:  {t:18, label:'Gs',           note:'3/stratum × 6 strata'},
+  3:  {t:12, label:'Atterberg',    note:'3/stratum × 4 cohesive strata (Table M.1)'},
+  4:  {t:18, label:'GSD',          note:'3/stratum × 6 strata (Table M.1)'},
+  5:  {t:12, label:'Hydrometry',   note:'with GSD, cohesive'},
+  6:  {t:12, label:'DST',          note:'3/stratum × 4 cohesive strata (Table P.2)'},
+  7:  {t:12, label:'Oedometer',    note:'3/stratum × 4 settlement strata (Table Q.1)'},
+  8:  {t:12, label:'TxUU',         note:'3/stratum × 4 cohesive strata (Table P.1)'},
+  9:  {t:6,  label:'TxCD',         note:'2/stratum × 3 strata (Table P.1)'},
+  10: {t:6,  label:'TxCU',         note:'2/stratum × 3 strata'},
+  11: {t:6,  label:'Organic Mat.', note:'Strata I (organic), ≥2/stratum'},
+  12: {t:12, label:'CaCO₃',        note:'2/stratum × 6 strata'},
+  13: {t:12, label:'Chem. (soil)', note:'2/stratum × 6 strata'},
+  14: {t:6,  label:'Chem. (water)',note:'1/stratum × 6 strata'},
+  15: {t:12, label:'AASHTO',       note:'2/stratum × 6 strata'},
+};
+
+// Shkodrani distribution targets PER BOREHOLE (7 BHs × target = project total)
+const SHKODRANI_PER_BH={
+  0:{t:4,  label:'γ'},
+  3:{t:5,  label:'Atterberg'},
+  4:{t:6,  label:'GSD'},
+  5:{t:4,  label:'Hydrometry'},
+  6:{t:6,  label:'DST'},
+  7:{t:6,  label:'Oedometer'},
+  8:{t:4,  label:'TxUU'},
+  9:{t:2,  label:'TxCD'},
+  11:{t:2, label:'Organic'},
+  12:{t:2, label:'CaCO₃'},
+  13:{t:2, label:'Chem.soil'},
+};
+
+// ─── Stratum & soil helpers ────────────────────────────────
+function getStratum(depthStr){
+  const p=depthStr.replace(/[–—]/g,'-').split('-');
+  if(p.length<2) return 'I';
+  const m=(parseFloat(p[0])+parseFloat(p[1]))/2;
+  if(isNaN(m)) return 'I';
+  if(m<=6)  return 'I';
+  if(m<=10) return 'II';
+  if(m<=30) return 'III';
+  if(m<=39) return 'IV';
+  if(m<=42) return 'V';
+  return 'VI';
+}
+function isCohesive(s){ return /clay|silt/i.test(s)&&!/sand/i.test(s); }
+function isSand(s){ return /sand|gravel/i.test(s); }
+function isOrganic(s){ return /organic/i.test(s); }
+function isNA(s){ return /not recovered|fill/i.test(s); }
+
+// ─── Auto test rules (EC7+Boti 2025) ──────────────────────
+function getAutoTests(stratum,soil){
+  if(isNA(soil)) return [];
+  const coh=isCohesive(soil), gran=isSand(soil);
+  let t=[0,1,2,15];
+  if(coh){
+    t.push(3,4,5);
+    switch(stratum){
+      case 'I':   t.push(6,7,8,9,11,12,13,14); break;
+      case 'II':  t.push(6,7,8,9,12,13,14);     break;
+      case 'III': t.push(6,7,8,9,12);            break;
+      case 'IV':  t.push(6,7,8,9,10,13);         break;
+      case 'V':   t.push(12,13);                  break;
+      case 'VI':  t.push(6,7,8,9,10,13);          break;
+    }
+    if(isOrganic(soil)) t.push(11);
+  } else if(gran){
+    t.push(4,5,12,13,14);
+    if(stratum==='I') t.push(11);
+  } else {
+    t.push(4,13,14);
+  }
+  return [...new Set(t)].sort((a,b)=>a-b);
+}
+
+// ─── Distribution algorithm (Shkodrani principle) ─────────
+// For a given BH, select a SUBSET of samples to carry each test
+// Target: ~6 Oed per BH, ~4 TxUU per BH, etc.
+// Strategy: select every Nth sample within clay strata
+function autoDistributeBH(bh){
+  const samples=bh.samples;
+  // Clear existing proposed tests
+  samples.forEach(s=>{
+    if(!s.locked){
+      s.tests=Array(16).fill(false);
+      s.source=Array(16).fill('');
+    }
+  });
+
+  // Group by stratum
+  const bySt={};
+  ['I','II','III','IV','V','VI'].forEach(st=>bySt[st]=[]);
+  samples.forEach((s,i)=>{
+    const st=getStratum(s.depth);
+    s.stratum=st;
+    if(!isNA(s.soilType)) bySt[st].push(i);
+  });
+
+  // Targets per BH
+  const perBH={
+    oed:6, txuu:4, dst:6, att:5, gsd:6, hyd:4, gamma:4, txcd:2, txcu:1, om:2, caco3:2, chs:2, chw:1
+  };
+
+  // Helper: pick indices evenly from array
+  function pickN(arr,n){
+    if(arr.length===0||n===0) return [];
+    if(arr.length<=n) return [...arr];
+    const step=arr.length/n;
+    const result=[];
+    for(let i=0;i<n;i++) result.push(arr[Math.round(i*step)]);
+    return [...new Set(result)];
+  }
+
+  // Collect cohesive sample indices across all strata
+  const claySamples=samples.map((s,i)=>({i,s,st:getStratum(s.depth)}))
+    .filter(x=>!x.s.locked&&isCohesive(x.s.soilType));
+  const sandSamples=samples.map((s,i)=>({i,s,st:getStratum(s.depth)}))
+    .filter(x=>!x.s.locked&&isSand(x.s.soilType));
+  const allCohIdx=claySamples.map(x=>x.i);
+  const allSandIdx=sandSamples.map(x=>x.i);
+  const allClay_III=claySamples.filter(x=>x.st==='III').map(x=>x.i);
+  const allClay_IV=claySamples.filter(x=>x.st==='IV').map(x=>x.i);
+  const allClay_I=claySamples.filter(x=>x.st==='I').map(x=>x.i);
+  const allClay_VI=claySamples.filter(x=>x.st==='VI').map(x=>x.i);
+
+  // --- Oedometer (target 6): distribute across I, III, IV
+  let oedIdxs=[];
+  oedIdxs=oedIdxs.concat(pickN(allClay_I, 1));
+  oedIdxs=oedIdxs.concat(pickN(allClay_III, Math.min(3, Math.max(0, perBH.oed-1-allClay_IV.length))));
+  oedIdxs=oedIdxs.concat(pickN(allClay_IV, Math.min(2, allClay_IV.length)));
+  oedIdxs=oedIdxs.concat(pickN(allClay_VI, Math.max(0, perBH.oed-oedIdxs.length)));
+  oedIdxs=[...new Set(oedIdxs)].slice(0,perBH.oed);
+
+  // --- TxUU (target 4): deeper clay samples
+  const deepClay=[...allClay_III,...allClay_IV].sort((a,b)=>a-b);
+  const txuuIdxs=pickN(deepClay, perBH.txuu);
+
+  // --- DST (target 6): similar to oedometer distribution
+  const dstIdxs=pickN(allCohIdx, perBH.dst);
+
+  // --- Atterberg (target 5): cohesive samples
+  const attIdxs=pickN(allCohIdx, perBH.att);
+
+  // --- GSD (target 6): all soil types
+  const allTestable=samples.map((s,i)=>i).filter(i=>!samples[i].locked&&!isNA(samples[i].soilType));
+  const gsdIdxs=pickN(allTestable, perBH.gsd);
+
+  // --- TxCD (target 2): deep clay
+  const txcdIdxs=pickN([...allClay_III,...allClay_IV].sort((a,b)=>a-b), perBH.txcd);
+
+  // --- TxCU (target 1): very deep
+  const txcuIdxs=pickN([...allClay_IV,...allClay_VI], perBH.txcu);
+
+  // --- OM (target 2): Stratum I
+  const omIdxs=pickN(allClay_I, perBH.om);
+
+  // --- CaCO3, ChS, ChW, AASHTO
+  const caco3Idxs=pickN(allCohIdx, perBH.caco3);
+  const chsIdxs=pickN(allTestable, perBH.chs);
+  const chwIdxs=pickN(allSandIdx.length>0?allSandIdx:allCohIdx, perBH.chw);
+
+  // --- γ, w, Gs on tested samples (union of all above)
+  const allSelected=[...new Set([...oedIdxs,...txuuIdxs,...dstIdxs,...txcdIdxs,...txcuIdxs,...gsdIdxs])];
+
+  // --- Apply tests
+  const apply=(idxs,testIdx,srcTag)=>{
+    idxs.forEach(i=>{
+      if(!samples[i].locked){
+        samples[i].tests[testIdx]=true;
+        samples[i].source[testIdx]=srcTag;
+      }
+    });
+  };
+
+  // Basic on all selected
+  allSelected.forEach(i=>{
+    [0,1,2].forEach(ti=>{
+      if(!samples[i].locked){samples[i].tests[ti]=true;samples[i].source[ti]='proposed';}
+    });
+  });
+  // Sand samples always get basic + GSD
+  allSandIdx.forEach(i=>{
+    if(!samples[i].locked){
+      [0,1,2,4,5].forEach(ti=>{samples[i].tests[ti]=true;samples[i].source[ti]='proposed';});
+    }
+  });
+  // Specific tests
+  apply(oedIdxs,7,'proposed');
+  apply(txuuIdxs,8,'proposed');
+  apply(dstIdxs,6,'proposed');
+  apply(attIdxs,3,'proposed');
+  apply(gsdIdxs,4,'proposed');
+  apply(gsdIdxs,5,'proposed'); // hyd with gsd
+  apply(txcdIdxs,9,'proposed');
+  apply(txcuIdxs,10,'proposed');
+  apply(omIdxs,11,'proposed');
+  apply(caco3Idxs,12,'proposed');
+  apply(chsIdxs,13,'proposed');
+  apply(chwIdxs,14,'proposed');
+  // AASHTO on selected
+  allSelected.slice(0,2).forEach(i=>{
+    if(!samples[i].locked){samples[i].tests[15]=true;samples[i].source[15]='proposed';}
+  });
+  // Update stratum field
+  samples.forEach(s=>{s.stratum=getStratum(s.depth);});
+}
+
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+let activeBH=3; // BH203 is index 3
+let boreholes=[{"id":"BH200","depth":45,"date":"","acceptance":"","shelby":"","lab":"GEOTEST shpk","status":"assumed","samples":[{"no":1,"sampleId":"C1","depth":"1.50-2.00","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":2,"sampleId":"C2","depth":"4.00-4.50","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":3,"sampleId":"C3","depth":"6.00-6.50","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":4,"sampleId":"C4","depth":"7.00-7.50","soilType":"Sand (SP-SM)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":5,"sampleId":"C5","depth":"10.00-10.50","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":6,"sampleId":"C6","depth":"13.00-13.50","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":7,"sampleId":"C7","depth":"16.00-16.50","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":8,"sampleId":"C8","depth":"19.00-19.50","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":9,"sampleId":"C9","depth":"22.00-22.50","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":10,"sampleId":"C10","depth":"25.00-25.50","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":11,"sampleId":"C11","depth":"28.00-28.50","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":12,"sampleId":"C12","depth":"31.00-31.50","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":13,"sampleId":"C13","depth":"34.00-34.50","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":14,"sampleId":"C14","depth":"36.00-36.50","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":15,"sampleId":"C15","depth":"39.00-39.50","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":16,"sampleId":"C16","depth":"42.00-42.50","soilType":"Sand (SP-SM)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false}]},{"id":"BH201","depth":45,"date":"","acceptance":"","shelby":"","lab":"GEOTEST shpk","status":"assumed","samples":[{"no":1,"sampleId":"C1","depth":"1.50-2.00","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":2,"sampleId":"C2","depth":"4.00-4.50","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":3,"sampleId":"C3","depth":"6.00-6.50","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":4,"sampleId":"C4","depth":"7.00-7.50","soilType":"Sand (SP-SM)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":5,"sampleId":"C5","depth":"10.00-10.50","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":6,"sampleId":"C6","depth":"13.00-13.50","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":7,"sampleId":"C7","depth":"16.00-16.50","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":8,"sampleId":"C8","depth":"19.00-19.50","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":9,"sampleId":"C9","depth":"22.00-22.50","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":10,"sampleId":"C10","depth":"25.00-25.50","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":11,"sampleId":"C11","depth":"28.00-28.50","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":12,"sampleId":"C12","depth":"31.00-31.50","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":13,"sampleId":"C13","depth":"34.00-34.50","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":14,"sampleId":"C14","depth":"36.00-36.50","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":15,"sampleId":"C15","depth":"39.00-39.50","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":16,"sampleId":"C16","depth":"42.00-42.50","soilType":"Sand (SP-SM)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false}]},{"id":"BH202","depth":45,"date":"","acceptance":"","shelby":"","lab":"GEOTEST shpk","status":"assumed","samples":[{"no":1,"sampleId":"C1","depth":"1.50-2.00","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":2,"sampleId":"C2","depth":"4.00-4.50","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":3,"sampleId":"C3","depth":"6.00-6.50","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":4,"sampleId":"C4","depth":"7.00-7.50","soilType":"Sand (SP-SM)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":5,"sampleId":"C5","depth":"10.00-10.50","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":6,"sampleId":"C6","depth":"13.00-13.50","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":7,"sampleId":"C7","depth":"16.00-16.50","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":8,"sampleId":"C8","depth":"19.00-19.50","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":9,"sampleId":"C9","depth":"22.00-22.50","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":10,"sampleId":"C10","depth":"25.00-25.50","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":11,"sampleId":"C11","depth":"28.00-28.50","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":12,"sampleId":"C12","depth":"31.00-31.50","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":13,"sampleId":"C13","depth":"34.00-34.50","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":14,"sampleId":"C14","depth":"36.00-36.50","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":15,"sampleId":"C15","depth":"39.00-39.50","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":16,"sampleId":"C16","depth":"42.00-42.50","soilType":"Sand (SP-SM)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false}]},{"id":"BH203","depth":45,"date":"2026-01-27","acceptance":"0034","shelby":"8","lab":"GEOTEST shpk","status":"done","samples":[{"no":1,"sampleId":"C1","depth":"1.50-2.00","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":true},{"no":2,"sampleId":"C2","depth":"4.00-4.50","soilType":"Silty Clay (CL-ML)","tests":[true,true,true,true,true,true,true,true,false,false,false,true,false,false,false,false],"source":["done","done","done","done","done","done","done","done","","","","done","","","",""],"locked":true},{"no":3,"sampleId":"C3","depth":"6.00-6.50","soilType":"Sample not recovered","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":true},{"no":4,"sampleId":"C4","depth":"7.00-7.50","soilType":"Sand (SP-SM)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":true},{"no":5,"sampleId":"C5","depth":"10.00-10.50","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":true},{"no":6,"sampleId":"C6","depth":"13.00-13.50","soilType":"Silty Clay (CL-ML)","tests":[true,true,true,true,true,true,true,true,false,false,false,false,false,false,false,false],"source":["done","done","done","done","done","done","done","done","","","","","","","",""],"locked":true},{"no":7,"sampleId":"C7","depth":"16.00-16.50","soilType":"Silty Clay (CL-ML)","tests":[true,true,true,true,true,true,true,true,true,false,false,false,false,false,false,false],"source":["done","done","done","done","done","done","done","done","done","","","","","","",""],"locked":true},{"no":8,"sampleId":"C8","depth":"19.00-19.50","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":true},{"no":9,"sampleId":"C9","depth":"22.00-22.50","soilType":"Clay (CH)","tests":[true,true,true,true,true,true,true,true,true,false,false,false,false,false,false,false],"source":["done","done","done","done","done","done","done","done","done","","","","","","",""],"locked":true},{"no":10,"sampleId":"C10","depth":"25.00-25.50","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":true},{"no":11,"sampleId":"C11","depth":"28.00-28.50","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":true},{"no":12,"sampleId":"C12","depth":"31.00-31.50","soilType":"Clay (CH)","tests":[true,true,true,true,true,true,true,true,true,false,false,false,false,false,false,false],"source":["done","done","done","done","done","done","done","done","done","","","","","","",""],"locked":true},{"no":13,"sampleId":"C13","depth":"34.00-34.50","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":true},{"no":14,"sampleId":"C14","depth":"36.00-36.50","soilType":"Clay (CH)","tests":[true,true,true,true,true,true,true,true,true,false,false,false,false,false,false,false],"source":["done","done","done","done","done","done","done","done","done","","","","","","",""],"locked":true},{"no":15,"sampleId":"C15","depth":"39.00-39.50","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":true},{"no":16,"sampleId":"C16","depth":"42.00-42.50","soilType":"Sand (SP-SM)","tests":[true,true,true,true,true,true,false,false,false,false,false,false,false,false,false,false],"source":["done","done","done","done","done","done","","","","","","","","","",""],"locked":true}]},{"id":"BH204","depth":45,"date":"2026-04-14","acceptance":"0014","shelby":"15","lab":"GEOTEST shpk","status":"received","samples":[{"no":1,"sampleId":"C1","depth":"2.50-3.00","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":2,"sampleId":"C2","depth":"5.50-6.00","soilType":"Silty Sand (SM)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":3,"sampleId":"C3","depth":"8.50-9.00","soilType":"Silty Sand (SM)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":4,"sampleId":"C4","depth":"11.00-11.50","soilType":"Silty Sand (SM)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":5,"sampleId":"C5","depth":"14.00-14.50","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":6,"sampleId":"C7","depth":"17.50-18.00","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":7,"sampleId":"C8","depth":"20.50-21.00","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":8,"sampleId":"C9","depth":"23.50-24.00","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":9,"sampleId":"C10","depth":"26.00-26.50","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":10,"sampleId":"C11","depth":"29.50-30.00","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":11,"sampleId":"C12","depth":"32.50-33.00","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":12,"sampleId":"C13","depth":"35.00-35.50","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":13,"sampleId":"C14","depth":"38.50-39.00","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":14,"sampleId":"C15","depth":"41.00-41.50","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":15,"sampleId":"C16","depth":"42.50-43.00","soilType":"Sand (SP-SM)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":16,"sampleId":"C17","depth":"44.50-45.00","soilType":"Clay (CL)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false}]},{"id":"BH205","depth":52,"date":"2026-04-10","acceptance":"0010","shelby":"16","lab":"GEOTEST shpk","status":"received","samples":[{"no":1,"sampleId":"C1","depth":"2.00-2.50","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":2,"sampleId":"C2","depth":"5.50-6.00","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":3,"sampleId":"C3","depth":"8.50-9.00","soilType":"Clay (CL)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":4,"sampleId":"C4","depth":"11.00-11.50","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":5,"sampleId":"C5","depth":"15.50-16.00","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":6,"sampleId":"C6","depth":"18.50-19.00","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":7,"sampleId":"C7","depth":"21.50-22.00","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":8,"sampleId":"C8","depth":"24.50-25.00","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":9,"sampleId":"C9","depth":"26.50-27.00","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":10,"sampleId":"C10","depth":"29.50-30.00","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":11,"sampleId":"C11","depth":"33.00-33.50","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":12,"sampleId":"C12","depth":"36.00-36.50","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":13,"sampleId":"C13","depth":"38.40-38.90","soilType":"Sand (SP-SM)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":14,"sampleId":"C14","depth":"42.50-43.00","soilType":"Clay (CL)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":15,"sampleId":"C15","depth":"45.50-46.00","soilType":"Clay (CL)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":16,"sampleId":"C16","depth":"48.50-49.00","soilType":"Clay (CL)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":17,"sampleId":"C17","depth":"51.50-52.00","soilType":"Clay (CL)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false}]},{"id":"BH206","depth":45,"date":"","acceptance":"","shelby":"","lab":"GEOTEST shpk","status":"assumed","samples":[{"no":1,"sampleId":"C1","depth":"1.50-2.00","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":2,"sampleId":"C2","depth":"4.00-4.50","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":3,"sampleId":"C3","depth":"6.00-6.50","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":4,"sampleId":"C4","depth":"7.00-7.50","soilType":"Sand (SP-SM)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":5,"sampleId":"C5","depth":"10.00-10.50","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":6,"sampleId":"C6","depth":"13.00-13.50","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":7,"sampleId":"C7","depth":"16.00-16.50","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":8,"sampleId":"C8","depth":"19.00-19.50","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":9,"sampleId":"C9","depth":"22.00-22.50","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":10,"sampleId":"C10","depth":"25.00-25.50","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":11,"sampleId":"C11","depth":"28.00-28.50","soilType":"Silty Clay (CL-ML)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":12,"sampleId":"C12","depth":"31.00-31.50","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":13,"sampleId":"C13","depth":"34.00-34.50","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":14,"sampleId":"C14","depth":"36.00-36.50","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":15,"sampleId":"C15","depth":"39.00-39.50","soilType":"Clay (CH)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false},{"no":16,"sampleId":"C16","depth":"42.00-42.50","soilType":"Sand (SP-SM)","tests":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"source":["","","","","","","","","","","","","","","",""],"locked":false}]}];
+
+// Ensure stratum calculated on load
+boreholes.forEach(bh=>bh.samples.forEach(s=>{s.stratum=getStratum(s.depth);}));
+
+// ═══════════════════════════════════════════════════════════
+// PAGE SWITCHING
+// ═══════════════════════════════════════════════════════════
+function switchPage(name,tabEl){
+  document.querySelectorAll('.page-content').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.page-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(name+'-page').classList.add('active');
+  tabEl.classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════════════
+// AUTO DISTRIBUTE
+// ═══════════════════════════════════════════════════════════
+function autoDistribute(){
+  const bh=boreholes[activeBH];
+  if(bh.status==='done'){alert('BH203 is locked – actual tests already completed.');return;}
+  autoDistributeBH(bh);
+  renderTable(); renderCompliance(); renderGlobalCompliance(); renderDistBar();
+}
+
+function autoDistributeAll(){
+  if(!confirm('Auto-distribute tests for all non-locked boreholes?\nThis will replace current proposals.')) return;
+  boreholes.forEach((bh,i)=>{
+    if(bh.status!=='done') autoDistributeBH(bh);
+  });
+  renderAll();
+}
+
+function clearNonLocked(){
+  if(!confirm('Clear all proposed tests from non-locked boreholes?')) return;
+  boreholes.forEach(bh=>{
+    if(bh.status!=='done'){
+      bh.samples.forEach(s=>{
+        if(!s.locked){s.tests=Array(16).fill(false);s.source=Array(16).fill('');}
+      });
+    }
+  });
+  renderAll();
+}
+
+function clearThisBH(){
+  const bh=boreholes[activeBH];
+  if(bh.status==='done'){alert('BH203 is locked.');return;}
+  bh.samples.forEach(s=>{
+    if(!s.locked){s.tests=Array(16).fill(false);s.source=Array(16).fill('');}
+  });
+  renderTable(); renderCompliance(); renderGlobalCompliance(); renderDistBar();
+}
+
+// ═══════════════════════════════════════════════════════════
+// BH MANAGEMENT
+// ═══════════════════════════════════════════════════════════
+function setActiveBH(idx){
+  activeBH=idx;
+  renderTabs(); renderBHInfo(); renderTable(); renderCompliance();
+}
+function updateBHField(field){
+  const map={id:'bh-id',depth:'bh-depth',date:'bh-date',acceptance:'bh-acc',shelby:'bh-shelby',lab:'bh-lab'};
+  const val=document.getElementById(map[field]).value;
+  if(field==='id'){boreholes[activeBH].id=val;renderTabs();}
+  else boreholes[activeBH][field]=val;
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDERING
+// ═══════════════════════════════════════════════════════════
+function renderAll(){
+  renderTabs(); renderBHInfo(); renderTable(); renderCompliance();
+  renderGlobalCompliance(); renderDistBar();
+}
+
+function renderTabs(){
+  const statusLabel={done:'✅ Done',received:'📋 Received',assumed:'❓ Assumed'};
+  const wrap=document.getElementById('bh-tabs');
+  wrap.innerHTML=boreholes.map((bh,i)=>`
+    <div class="bh-tab ${i===activeBH?'active':''}" onclick="setActiveBH(${i})">
+      ${bh.id}
+      <span class="badge ${bh.status}">${statusLabel[bh.status]||bh.status}</span>
+    </div>`).join('');
+}
+
+function renderBHInfo(){
+  const bh=boreholes[activeBH];
+  document.getElementById('bh-id').value=bh.id;
+  document.getElementById('bh-depth').value=bh.depth||'';
+  document.getElementById('bh-date').value=bh.date||'';
+  document.getElementById('bh-acc').value=bh.acceptance||'';
+  document.getElementById('bh-shelby').value=bh.shelby||'';
+  document.getElementById('bh-lab').value=bh.lab||'';
+  const badge=document.getElementById('bh-status-badge');
+  const labels={done:'🔒 Completed (January 2026)',received:'📋 Programme received',assumed:'❓ Assumed stratigraphy – update when available'};
+  badge.textContent=labels[bh.status]||bh.status;
+  badge.className='bh-status-badge '+bh.status;
+  // Note box
+  const note=document.getElementById('bh-note');
+  const notes={
+    done:'BH203 is LOCKED. Tests were completed in January 2026. Results: 7 samples tested (C2, C6, C7, C9, C12, C14, C16). This borehole is the reference for distribution.',
+    received:'Programme received from GEOTEST. Use ⚡ Distribute to propose test distribution for '+bh.samples.length+' available samples.',
+    assumed:'Stratigraphy assumed based on BH203 template. Update sample descriptions when actual field logs are received, then re-distribute.'
+  };
+  if(notes[bh.status]){note.textContent=notes[bh.status];note.style.display='block';}
+  else note.style.display='none';
+  // Add row bar visibility
+  document.getElementById('add-row-bar').style.display=bh.status==='done'?'none':'flex';
+}
+
+function renderTable(){
+  const bh=boreholes[activeBH];
+  const head=document.getElementById('tbl-head');
+  head.innerHTML=`<tr>
+    <th class="info-col">No.</th>
+    <th class="info-col">Sample</th>
+    <th class="info-col" style="min-width:110px">Depth (m)</th>
+    <th class="info-col" style="min-width:170px">Soil Description</th>
+    <th class="info-col">Stratum</th>
+    ${TESTS.map(t=>`<th class="test-col">${t.label.replace(/\n/g,'<br>')}</th>`).join('')}
+    <th class="info-col">Del</th>
+  </tr>`;
+
+  const body=document.getElementById('tbl-body');
+  if(!bh.samples.length){
+    body.innerHTML=`<tr><td colspan="${5+16+1}" style="padding:16px;color:#888;text-align:center">No samples.</td></tr>`;
+    return;
+  }
+  body.innerHTML=bh.samples.map((s,si)=>{
+    const locked=s.locked||bh.status==='done';
+    const rowClass=locked?'locked-row':'';
+    const cells=s.tests.map((chk,ti)=>{
+      const src=s.source[ti];
+      let bg='background:#FAFAFA';
+      if(chk){
+        if(src==='done') bg='background:#FFF3E0';
+        else if(src==='proposed') bg='background:var(--gl)';
+        else bg='background:#E3F2FD';
+      }
+      const dot=chk?(src==='done'?'<span class="src-dot done"></span>':
+                     src==='proposed'?'<span class="src-dot proposed"></span>':
+                     '<span class="src-dot manual"></span>'):'';
+      return `<td style="${bg}">
+        <input type="checkbox" class="test-cb" ${chk?'checked':''} ${locked?'disabled':''}
+          onchange="toggleTest(${si},${ti},this.checked)"> ${dot}</td>`;
+    }).join('');
+    const soilOpts=['Clay (CH)','Clay (CL)','Silty Clay (CL-ML)','Silt (ML)','Organic Clay (OH)',
+      'Silty Sand (SM)','Sand (SP-SM)','Sand (SP)','Gravel (GW-GP)','Fill / Mixed','Sample not recovered'];
+    return `<tr class="${rowClass}">
+      <td>${s.no}</td>
+      <td>${locked?`<strong>${s.sampleId}</strong>`:`<input type="text" value="${s.sampleId}"
+        onchange="updateField(${si},'sampleId',this.value)"
+        style="width:48px;border:1px solid #ddd;border-radius:3px;padding:2px;font-size:10px">`}</td>
+      <td>${locked?s.depth:`<input type="text" value="${s.depth}"
+        onchange="updateDepth(${si},this.value)"
+        style="width:100px;border:1px solid #ddd;border-radius:3px;padding:2px;font-size:10px">`}</td>
+      <td style="text-align:left">${locked?s.soilType:`<select onchange="updateSoil(${si},this.value)"
+        style="width:100%;font-size:10px;border:1px solid #ddd;border-radius:3px;padding:2px">
+        ${soilOpts.map(o=>`<option ${o===s.soilType?'selected':''}>${o}</option>`).join('')}
+        </select>`}</td>
+      <td><span class="strat-badge strat-${s.stratum||'I'}">${s.stratum||'I'}</span></td>
+      ${cells}
+      <td>${locked?'🔒':`<button class="row-action-btn btn-del-row" onclick="delRow(${si})">✕</button>`}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderCompliance(){
+  const bh=boreholes[activeBH];
+  const grid=document.getElementById('comp-grid');
+  const stNames={I:'0–6m',II:'6–10m',III:'10–30m',IV:'30–39m',V:'39–42m',VI:'42–50m'};
+  // Shows Shkodrani distribution targets for THIS borehole (not EC7 minimums)
+  // EC7 compliance is per-stratum globally → see the table below
+  grid.innerHTML=['I','II','III','IV','V','VI'].map(st=>{
+    const smpls=bh.samples.filter(s=>getStratum(s.depth)===st&&!isNA(s.soilType));
+    if(!smpls.length) return '';
+    const n=smpls.length;
+    const cnt=Array(16).fill(0);
+    smpls.forEach(s=>s.tests.forEach((v,i)=>{if(v)cnt[i]++;}));
+    const coh=smpls.some(s=>isCohesive(s.soilType));
+    let fail=false,warn=false;
+    const bars=[];
+    const chk=(ti,req,label,cohRequired)=>{
+      if(cohRequired&&!coh) return;
+      const c=cnt[ti];
+      const cls=c>=req?'ok':c>0?'warn':'fail';
+      if(cls==='fail') fail=true;
+      if(cls==='warn') warn=true;
+      bars.push(`<div class="comp-bar">
+        <span class="label">${label}</span>
+        <span class="count ${cls}">${c}</span>
+        <span class="req">/${req}</span></div>`);
+    };
+    // Basic on all testable samples
+    chk(1,n,'w',false);
+    chk(0,SHKODRANI_PER_BH[0].t,'γ',false);
+    chk(4,SHKODRANI_PER_BH[4].t,'GSD',false);
+    if(coh){
+      chk(3,SHKODRANI_PER_BH[3].t,'Atterberg',true);
+      chk(7,SHKODRANI_PER_BH[7].t,'Oedometer',true);
+      chk(8,SHKODRANI_PER_BH[8].t,'TxUU',true);
+      chk(9,SHKODRANI_PER_BH[9].t,'TxCD',true);
+      chk(6,SHKODRANI_PER_BH[6].t,'DST',true);
+    }
+    const cls=fail?'fail':warn?'warn':'ok';
+    const icon=fail?'❌':warn?'⚠️':'✅';
+    return `<div class="comp-card ${cls}">
+      <h4>${icon} Str. ${st} (${stNames[st]}) · ${n} sample${n>1?'s':''}</h4>
+      <div style="font-size:8.5px;color:#888;margin-bottom:3px;font-style:italic">Shkodrani targets/BH</div>
+      ${bars.join('')}</div>`;
+  }).join('');
+  if(!grid.innerHTML.trim()) grid.innerHTML='<p style="color:#888;font-size:11px">Add samples to see distribution.</p>';
+}
+
+function renderGlobalCompliance(){
+  // ── Count tests per stratum across all 7 BHs combined ─────────────────
+  const strata=['I','II','III','IV','V','VI'];
+  const stNames={
+    I:'0–6 m · soft clay',
+    II:'6–10 m · sand',
+    III:'10–30 m · soft clay',
+    IV:'30–39 m · firm clay',
+    V:'39–42 m · sand',
+    VI:'42–50 m · silty clay'
+  };
+  // cntBySt[stratum][testIdx] = total tests across all BHs
+  const cntBySt={};
+  strata.forEach(st=>cntBySt[st]=Array(16).fill(0));
+  boreholes.forEach(bh=>bh.samples.forEach(s=>{
+    const st=s.stratum||getStratum(s.depth);
+    if(cntBySt[st]) s.tests.forEach((v,i)=>{if(v)cntBySt[st][i]++;});
+  }));
+
+  // ── Column definitions: each test shown in the matrix ────────────────
+  // strata_ok = strata where this test is relevant / required
+  // min = EC7 minimum per stratum (EN 1997-2:2007)
+  // src = EC7 table reference
+  const cols=[
+    {ti:0,  key:'γ',        strata_ok:['I','II','III','IV','V','VI'], min:3, src:'M.3'},
+    {ti:4,  key:'GSD',      strata_ok:['I','II','III','IV','V','VI'], min:3, src:'M.1'},
+    {ti:3,  key:'Att.',     strata_ok:['I','III','IV','VI'],          min:3, src:'M.1'},
+    {ti:6,  key:'DST',      strata_ok:['I','III','IV','VI'],          min:3, src:'P.2'},
+    {ti:7,  key:'Oed.',     strata_ok:['I','III','IV','VI'],          min:3, src:'Q.1'},
+    {ti:8,  key:'TxUU',     strata_ok:['I','III','IV','VI'],          min:3, src:'P.1'},
+    {ti:9,  key:'TxCD',     strata_ok:['III','IV','VI'],              min:2, src:'P.1'},
+  ];
+
+  const tbl=document.getElementById('glob-tbl');
+  // ── Header row ────────────────────────────────────────────────────────
+  let html=`<thead><tr>
+    <th style="min-width:100px">Stratum</th>
+    <th style="min-width:110px">Depth / Soil</th>
+    ${cols.map(c=>`<th style="text-align:center;min-width:58px">${c.key}<br>
+      <span style="font-size:8px;font-weight:400;opacity:.8">EC7 min: ${c.min}<br>(Tbl ${c.src})</span></th>`).join('')}
+    <th style="min-width:80px">EC7 Status</th>
+    <th style="min-width:120px">Shkodrani total<br><span style="font-size:8px;font-weight:400">(7 BHs × target)</span></th>
+  </tr></thead><tbody>`;
+
+  // ── One row per stratum ────────────────────────────────────────────────
+  let projectOk=true;
+  strata.forEach(st=>{
+    let rowOk=true, rowAny=false;
+    const cells=cols.map(c=>{
+      if(!c.strata_ok.includes(st)){
+        return `<td style="background:#f5f5f5;color:#ccc;text-align:center">–</td>`;
+      }
+      const cnt=cntBySt[st][c.ti];
+      const ok=(cnt>=c.min);
+      const part=(cnt>0&&!ok);
+      rowAny=true;
+      if(!ok){rowOk=false; projectOk=false;}
+      const bg=ok?'#E8F5E9':part?'#FFF8E1':'#FDECEA';
+      const col=ok?'#2E7D32':part?'#E65100':'#C00000';
+      const icon=ok?'✅':part?'⚠':'❌';
+      return `<td style="background:${bg};text-align:center">
+        <span style="font-weight:700;color:${col};font-size:13px">${cnt}</span>
+        <span style="color:#999;font-size:9px"> /${c.min}</span>
+        <span style="font-size:9px"> ${icon}</span>
+      </td>`;
+    }).join('');
+
+    // Shkodrani totals for this stratum (sum across all BHs of proposed+done)
+    const shkodOed=cntBySt[st][7], shkodTxUU=cntBySt[st][8], shkodDST=cntBySt[st][6];
+    const shkodStr=(['I','III','IV','VI'].includes(st))
+      ? `Oed:${shkodOed} TxUU:${shkodTxUU} DST:${shkodDST}`
+      : `γ:${cntBySt[st][0]} GSD:${cntBySt[st][4]}`;
+
+    const rowStatus=!rowAny?'–':rowOk
+      ?'<span style="color:#2E7D32;font-weight:700">✅ Met</span>'
+      :'<span style="color:#C00000;font-weight:700">❌ Needs more</span>';
+
+    html+=`<tr>
+      <td><span class="strat-badge strat-${st}">Str. ${st}</span></td>
+      <td style="font-size:10px;color:#555">${stNames[st]}</td>
+      ${cells}
+      <td style="text-align:center">${rowStatus}</td>
+      <td style="font-size:9.5px;color:#555">${shkodStr}</td>
+    </tr>`;
+  });
+
+  // ── Footer: EC7 reference ─────────────────────────────────────────────
+  html+=`</tbody><tfoot><tr style="background:#EFF3F9;font-style:italic">
+    <td colspan="2" style="font-size:9px;color:#555;padding:5px 8px">
+      EN 1997-2:2007 Annexes M/P/Q · Medium comparable experience (CPTs available) ·
+      <strong>All minimums are per stratum across all boreholes combined</strong>
+    </td>
+    ${cols.map(c=>`<td style="text-align:center;font-size:9px;color:#555">${c.min}/str.</td>`).join('')}
+    <td></td><td></td>
+  </tr></tfoot>`;
+
+  tbl.innerHTML=html;
+}
+
+function renderDistBar(){
+  const cnt=Array(16).fill(0);
+  boreholes.forEach(bh=>bh.samples.forEach(s=>s.tests.forEach((v,i)=>{if(v)cnt[i]++;})));
+  const wrap=document.getElementById('dist-items');
+  const show=[0,1,3,4,6,7,8,9,11,13];
+  wrap.innerHTML=show.map(ti=>{
+    const {t,label}=EC7_GLOBAL[ti];
+    const curr=cnt[ti]; const pct=t?Math.min(100,curr/t*100):100;
+    const cls=pct>=100?'over':pct>=70?'ok':pct>=40?'warn':'fail';
+    return `<div class="dist-item">
+      <span class="dlabel">${TESTS[ti].short}</span>
+      <div class="dist-progress"><div class="dist-fill ${cls}" style="width:${pct}%"></div></div>
+      <span class="dist-counts"><span class="curr ${cls}">${curr}</span>/${t||'all'}</span>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// SAMPLE OPERATIONS
+// ═══════════════════════════════════════════════════════════
+function addSampleRow(){
+  const bh=boreholes[activeBH];
+  if(bh.status==='done') return;
+  const sid=document.getElementById('in-sample').value.trim()||`C${bh.samples.length+1}`;
+  const depth=document.getElementById('in-depth').value.trim()||`${bh.samples.length*3}-${bh.samples.length*3+0.5}`;
+  const soil=document.getElementById('in-soil').value;
+  const st=getStratum(depth);
+  bh.samples.push({no:bh.samples.length+1,sampleId:sid,depth,soilType:soil,stratum:st,
+    tests:Array(16).fill(false),source:Array(16).fill(''),locked:false});
+  document.getElementById('in-sample').value='';
+  document.getElementById('in-depth').value='';
+  renderTable(); renderCompliance(); renderGlobalCompliance(); renderDistBar();
+}
+function delRow(si){
+  const bh=boreholes[activeBH];
+  bh.samples.splice(si,1);
+  bh.samples.forEach((s,i)=>s.no=i+1);
+  renderTable(); renderCompliance(); renderGlobalCompliance(); renderDistBar();
+}
+function toggleTest(si,ti,val){
+  const s=boreholes[activeBH].samples[si];
+  if(s.locked) return;
+  s.tests[ti]=val; s.source[ti]=val?'manual':'';
+  renderCompliance(); renderGlobalCompliance(); renderDistBar();
+}
+function updateField(si,f,v){boreholes[activeBH].samples[si][f]=v;}
+function updateDepth(si,v){
+  const s=boreholes[activeBH].samples[si];
+  s.depth=v; s.stratum=getStratum(v);
+  renderTable(); renderCompliance();
+}
+function updateSoil(si,v){
+  boreholes[activeBH].samples[si].soilType=v;
+  renderTable(); renderCompliance();
+}
+
+// ═══════════════════════════════════════════════════════════
+// EXCEL EXPORT
+// ═══════════════════════════════════════════════════════════
+function exportExcel(){
+  const wb=XLSX.utils.book_new();
+  const proj={
+    name:document.getElementById('p-project').value,
+    client:document.getElementById('p-client').value,
+    loc:document.getElementById('p-location').value,
+    eng:document.getElementById('p-engineer').value,
+    date:document.getElementById('p-date').value,
+  };
+
+  boreholes.forEach(bh=>{
+    const rows=[];
+    rows.push([`LABORATORY TESTING PROGRAMME – ${bh.id} [${bh.status.toUpperCase()}]`]);
+    rows.push([`Project: ${proj.name}  |  Client: ${proj.client}  |  Location: ${proj.loc}`]);
+    rows.push([`Engineer: ${proj.eng}  |  Date: ${bh.date||proj.date}  |  Lab: ${bh.lab}`]);
+    rows.push([`Status: ${bh.status==='done'?'COMPLETED – Jan 2026 (BH203)':bh.status==='received'?'Programme received':'Assumed stratigraphy – pending'}`]);
+    rows.push([]);
+    const hdr=['No.','Sample','Depth (m)','Soil Description','Stratum'];
+    TESTS.forEach(t=>hdr.push(t.key));
+    rows.push(hdr);
+    bh.samples.forEach(s=>{
+      const row=[s.no,s.sampleId,s.depth,s.soilType,'Str.'+getStratum(s.depth)];
+      s.tests.forEach((v,ti)=>{
+        if(!v) row.push('');
+        else if(s.source[ti]==='done') row.push('X (done)');
+        else if(s.source[ti]==='proposed') row.push('X (proposed)');
+        else row.push('X*');
+      });
+      rows.push(row);
+    });
+    rows.push([]);
+    const cnt=Array(16).fill(0);
+    bh.samples.forEach(s=>s.tests.forEach((v,i)=>{if(v)cnt[i]++;}));
+    rows.push(['TOTALS','','','','',...cnt]);
+    rows.push(['LEGEND: X (done)=completed | X (proposed)=auto-distributed | X*=manual']);
+    const ws=XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols']=[{wch:5},{wch:9},{wch:14},{wch:38},{wch:10},...TESTS.map(()=>({wch:8}))];
+    const nc=5+TESTS.length;
+    ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:nc-1}},{s:{r:1,c:0},e:{r:1,c:nc-1}},
+                   {s:{r:2,c:0},e:{r:2,c:nc-1}},{s:{r:3,c:0},e:{r:3,c:nc-1}}];
+    XLSX.utils.book_append_sheet(wb,ws,bh.id.slice(0,31));
+  });
+
+  // Summary sheet
+  const sumRows=[
+    ['DISTRIBUTION SUMMARY – ALL 7 BOREHOLES'],
+    [`Project: ${proj.name}  |  Principle: Shkodrani (2026) – tests distributed evenly across BHs`],
+    [],
+    ['Borehole','Status','Depth (m)','Samples',...TESTS.map(t=>t.key)],
+  ];
+  boreholes.forEach(bh=>{
+    const cnt=Array(16).fill(0);
+    bh.samples.forEach(s=>s.tests.forEach((v,i)=>{if(v)cnt[i]++;}));
+    sumRows.push([bh.id,bh.status,bh.depth,bh.samples.length,...cnt]);
+  });
+  sumRows.push([]);
+  sumRows.push(['TOTALS','','','',...Array(16).fill(0).map((_,i)=>
+    boreholes.reduce((acc,bh)=>acc+bh.samples.reduce((a,s)=>a+(s.tests[i]?1:0),0),0)
+  )]);
+  const targets=['EC7 Targets (7BH)','','','',...Object.values(EC7_GLOBAL).map(x=>x.t||'all')];
+  sumRows.push(targets);
+  const wsSummary=XLSX.utils.aoa_to_sheet(sumRows);
+  wsSummary['!cols']=[{wch:10},{wch:12},{wch:10},{wch:10},...TESTS.map(()=>({wch:8}))];
+  XLSX.utils.book_append_sheet(wb,wsSummary,'Summary');
+
+  XLSX.writeFile(wb,`LIDL_Durres_Lab_Programme_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+// ═══════════════════════════════════════════════════════════
+// SAVE / LOAD JSON
+// ═══════════════════════════════════════════════════════════
+function saveJSON(){
+  const data={version:3,project:{
+    name:document.getElementById('p-project').value,
+    client:document.getElementById('p-client').value,
+    location:document.getElementById('p-location').value,
+    engineer:document.getElementById('p-engineer').value,
+    date:document.getElementById('p-date').value,
+  },boreholes};
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+  a.download=`LIDL_Durres_Lab_v3_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+}
+function loadJSON(event){
+  const f=event.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=e=>{try{
+    const d=JSON.parse(e.target.result);
+    if(d.project){
+      ['name','client','location','engineer','date'].forEach(k=>{
+        const el=document.getElementById('p-'+k);
+        if(el&&d.project[k]) el.value=d.project[k];
+      });
+    }
+    if(d.boreholes&&d.boreholes.length){
+      boreholes=d.boreholes;
+      boreholes.forEach(bh=>bh.samples.forEach(s=>{s.stratum=getStratum(s.depth);}));
+      activeBH=0; renderAll();
+    }
+  }catch(err){alert('Load error: '+err.message);}};
+  r.readAsText(f);
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+document.getElementById('p-date').value=new Date().toISOString().slice(0,10);
+// Auto-distribute on load for non-locked BHs
+boreholes.forEach(bh=>{if(bh.status!=='done') autoDistributeBH(bh);});
+renderAll();
+</script>
+</body>
+</html>
